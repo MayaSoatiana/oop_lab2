@@ -1,4 +1,5 @@
-#include <BitString.h>
+#include <bitString.h>
+#include <dynamicArray.h>
 #include <iostream>
 #include <string.h>
 
@@ -6,26 +7,16 @@ bool BitString::validCharacter(char c) {
     return (c == '0' || c == '1');
 }
 
+BitString::BitString(): bitArray(){}
 
-BitString::BitString() : bitArray(nullptr), arraySize(0) {
-    std::cout << "default constructor" << std::endl;
-}
-
-//defined size + default value
 BitString::BitString(const size_t& arraySize, unsigned char defaultValue){  
     if (!validCharacter(defaultValue)){
         throw std::invalid_argument("default value incorrected");
     } 
     
-    this->arraySize = arraySize;
-    this->bitArray = new unsigned char[arraySize];
-
-    for (size_t i = 0; i < arraySize; i++){
-        this->bitArray[i] = defaultValue;
-    }   
+    this->bitArray = DynamicArray(arraySize, defaultValue);
 }
 
-//initialised list
 BitString::BitString(const std::initializer_list<unsigned char>& initialValues){
     for (const auto& c : initialValues){
         if (!validCharacter(c)){
@@ -33,16 +24,9 @@ BitString::BitString(const std::initializer_list<unsigned char>& initialValues){
         } 
     }
     
-    this->arraySize = initialValues.size();
-    this->bitArray = new unsigned char[arraySize];
-    
-    size_t index = 0;
-    for (const auto& value : initialValues) {
-        bitArray[index++] = value;
-    }
+    this->bitArray = DynamicArray(initialValues);
 }  
 
-// from a string
 BitString::BitString(const std::string& sourceString){ 
     if (sourceString.empty()){
         throw std::invalid_argument("Empty string");
@@ -53,156 +37,131 @@ BitString::BitString(const std::string& sourceString){
         } 
     }
 
-    this->arraySize = sourceString.length();
-    this->bitArray = new unsigned char[arraySize];
-
-    for (size_t i = 0; i < sourceString.length(); i++){
-        this->bitArray[i] = static_cast<unsigned char>(sourceString.at(i));
-    }    
+    this->bitArray = DynamicArray(sourceString); 
 }
-
-//copy contstructor 
+ 
 BitString::BitString(const BitString& other){
-    this->arraySize = other.arraySize;
-    this->bitArray = new unsigned char[arraySize];
-
-    for (size_t i = 0; i < arraySize; i++){
-        this->bitArray[i] = other.bitArray[i];
-    }  
+    this->bitArray = other.bitArray;
 }
     
-// moving constructor
 BitString::BitString(BitString&& other) noexcept{
-    this->arraySize = other.arraySize;
-    this->bitArray = other.bitArray;
-
-    other.arraySize = 0;
-    other.bitArray = nullptr;
+    this->bitArray = std::move(other.bitArray);
 }
 
 // == Getters==
-size_t BitString::getSize(){
-    return this->arraySize;
-}
-
-unsigned char* BitString::getBitArray(){
+DynamicArray BitString::getBitArray(){
     return this->bitArray;
 }
 
 // ==Setters==
-void BitString::setSize(size_t newSize){
-    this->arraySize = newSize;
-}
-
-void BitString::setBitArray(unsigned char* newArray){
+void BitString::setBitArray(DynamicArray newArray){
     this->bitArray = newArray;
 }
 
 BitString BitString::andOperation (const BitString& other){
-    size_t maxLength = std::max(this->arraySize, other.arraySize);
+    size_t maxLength = std::max(this->bitArray.getSize(), other.bitArray.getSize());
     BitString padded1 = this->padding(maxLength);
     BitString padded2 = other.padding(maxLength);
     BitString result(maxLength);
 
     for(size_t i = 0; i < maxLength; i++){
-        if((padded1.bitArray[i] == '1' && padded2.bitArray[i]=='1')){
-            result.bitArray[i] = '1';
+        if((padded1.bitArray.getData()[i] == '1' && padded2.bitArray.getData()[i]=='1')){
+            result.bitArray.insertAt(i, '1');
         }
         else{
-            result.bitArray[i] = '0';
+            result.bitArray.insertAt(i, '0');
         }
     }
     return result;    
 }
 
 BitString BitString::orOperation(const BitString& other){
-    size_t maxLength = std::max(this->arraySize, other.arraySize);
+    size_t maxLength = std::max(this->bitArray.getSize(), other.bitArray.getSize());
     BitString padded1 = this->padding(maxLength);
     BitString padded2 = other.padding(maxLength);
     BitString result(maxLength);
 
     for(size_t i = 0; i < maxLength; i++){
-        if((padded1.bitArray[i] == '0' && padded2.bitArray[i]=='0')){
-            result.bitArray[i] = '0';
+        if((padded1.bitArray.getData()[i] == '0' && padded2.bitArray.getData()[i]=='0')){
+            result.bitArray.insertAt(i, '0');
         }
         else{
-            result.bitArray[i] = '1';
+            result.bitArray.insertAt(i, '1');
         }
     }
     return result;    
 }
 
 BitString BitString::xorOperation(const BitString& other){
-    size_t maxLength = std::max(this->arraySize, other.arraySize);
+    size_t maxLength = std::max(this->bitArray.getSize(), other.bitArray.getSize());
     BitString padded1 = this->padding(maxLength);
     BitString padded2 = other.padding(maxLength);
     BitString result(maxLength);
 
     for(size_t i = 0; i < maxLength; i++){
-        if((padded1.bitArray[i] == padded2.bitArray[i])){
-            result.bitArray[i] = '0';
+        if((padded1.bitArray.getData()[i] == padded2.bitArray.getData()[i])){
+            result.bitArray.insertAt(i, '0');
         }
         else{
-            result.bitArray[i] = '1';
+            result.bitArray.insertAt(i, '1');
         }
     }
     return result;
 }
 
 BitString BitString::notOperation(){
-    BitString result(this->arraySize);
+    BitString result(this->bitArray.getSize());
 
-    for(size_t i = 0; i < this->arraySize; i++){
-        if(this->bitArray[i] == '0'){
-            result.bitArray[i] = '1';
+    for(size_t i = 0; i < this->bitArray.getSize(); i++){
+        if(this->bitArray.getData()[i] == '0'){
+            result.bitArray.insertAt(i, '1');
         }
         else{
-            result.bitArray[i] = '0';
+            result.bitArray.insertAt(i, '0');
         }
     }
     return result;
 }
 
 void BitString::print() const{
-    for(size_t i = 0; i < this->arraySize ; i++){
-        std::cout << this->bitArray[i];
+    for(size_t i = 0; i < this->bitArray.getSize() ; i++){
+        std::cout << this->bitArray.getData()[i];
     }
     std::cout << std::endl;
 }
 
-BitString::~BitString() noexcept{
-    // std::cout << "destructor" << std::endl;
-    
-    if (bitArray != nullptr) {
-        delete[] bitArray;
-        bitArray = nullptr;
+BitString::~BitString() noexcept{    
+    if (bitArray.getData() != nullptr) {
+        delete[] bitArray.getData();
+        bitArray.setData(nullptr);
     }
-    arraySize = 0;
+    bitArray.setSize(0);
 }
 
 BitString BitString::padding(size_t length) const{
-    if(this->arraySize >= length){
+    if(bitArray.getSize() >= length){
         return *this;
     }
     BitString result(length, '0'); 
 
-    size_t offset = length - this->arraySize;
-    for(size_t i = 0; i < this->arraySize; i++){
-        result.bitArray[offset + i] = this->bitArray[i];
+    size_t offset = length - this->bitArray.getSize();
+    for(size_t i = 0; i < this->bitArray.getSize(); i++){
+        result.bitArray.getData()[offset + i] = this->bitArray.getData()[i];
     }
     return result;
 }
 
-// Add comparison function for testing
 bool BitString::equals(const BitString& other) const {
-    if (arraySize != other.arraySize) return false;
-    for (size_t i = 0; i < arraySize; i++) {
-        if (bitArray[i] != other.bitArray[i]) return false;
+    if (this->bitArray.getSize() != other.bitArray.getSize()) return false;
+    for (size_t i = 0; i < bitArray.getSize(); i++) {
+        if (bitArray.getData()[i] != other.bitArray.getData()[i]) return false;
     }
     return true;
 }
 
-// Add function to get as string for testing
 std::string BitString::toString() const {
-    return std::string(bitArray, bitArray + arraySize);
+    if (bitArray.getData() == nullptr) {
+        return "";
+    }
+    return std::string(bitArray.getData(), bitArray.getData() + bitArray.getSize());
 }

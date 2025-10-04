@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "BitString.h"
+#include <dynamicArray.h>
 #include <stdexcept>
 
 // ==================== CONSTRUCTOR TESTS ====================
@@ -10,7 +11,7 @@ TEST(BitStringTest, EmptyStringConstructorThrowsException) {
 TEST(BitStringTest, DefaultConstructorCreatesEmptyString) {
     BitString bs;  
     ASSERT_EQ(bs.toString(), "");  
-    ASSERT_EQ(bs.getSize(), 0);
+    ASSERT_EQ(bs.getBitArray().getSize(), 0);
 }
 
 TEST(BitStringTest, SizeConstructorWithZeros) {

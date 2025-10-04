@@ -16,7 +16,10 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-add_library(${CMAKE_PROJECT_NAME}_lib STATIC src/BitString.cpp)
+add_library(${CMAKE_PROJECT_NAME}_lib STATIC 
+  src/BitString.cpp 
+  src/dynamicArray.cpp
+)
 target_include_directories(${CMAKE_PROJECT_NAME}_lib PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
 add_executable(${CMAKE_PROJECT_NAME}_exe main.cpp)

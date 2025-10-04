@@ -1,31 +1,25 @@
 #pragma once
 #include <iostream>
+#include <dynamicArray.h>
 
 class BitString{
 
 public:
     //==CONSTRUCTORS==
-
-    //default    
+   
     BitString();
-    //defined size + default value
     BitString(const size_t& arraySize, unsigned char defaultValue = '0');
-    //initialised list
     BitString(const std::initializer_list<unsigned char>& initialValues);   
-    // from a string
     BitString(const std::string& sourceString);
-    //copy contstructor 
+
     BitString(const BitString& other); 
-    // moving constructor
     BitString(BitString&& other) noexcept;
 
     // == Getters==
-    size_t getSize();
-    unsigned char* getBitArray();
+    DynamicArray getBitArray();
 
     // ==Setters==
-    void setSize(size_t newSize);
-    void setBitArray(unsigned char* newArray);
+    void setBitArray(DynamicArray newArray);
 
     //==OPERATIONS==
     BitString andOperation(const BitString& other);
@@ -42,9 +36,8 @@ public:
     std::string toString() const;
 
 private:
-    size_t arraySize;
-    unsigned char* bitArray;
-
+    DynamicArray bitArray;
     bool validCharacter(char c);
+
     BitString padding(size_t length) const;
 };
